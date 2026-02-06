@@ -1,58 +1,78 @@
-export default function Home() {
+import { supabase } from '@/lib/supabase'
+
+interface Image {
+  id: string
+  url: string | null
+  image_description: string | null
+  created_datetime_utc: string
+  is_public: boolean | null
+}
+
+export default async function Home() {
+  const { data: images, error } = await supabase
+    .from('images')
+    .select('id, url, image_description, created_datetime_utc, is_public')
+    .eq('is_public', true)
+    .order('created_datetime_utc', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching images:', error)
+  }
+
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
-      {/* Navigation Bar */}
-      <nav style={{
-        backgroundColor: '#000',
-        padding: '1.5rem 2rem',
-        borderBottom: '1px solid #e5e5e5'
-      }}>
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          display: 'flex',
-          gap: '2rem',
-          alignItems: 'center'
-        }}>
-          <a href="#" style={{
-            color: '#fff',
-            textDecoration: 'none',
-            fontSize: '1.1rem',
-            fontWeight: '500'
-          }}>Home</a>
-          <a href="#" style={{
-            color: '#fff',
-            textDecoration: 'none',
-            fontSize: '1.1rem',
-            fontWeight: '500'
-          }}>About</a>
-          <a href="#" style={{
-            color: '#fff',
-            textDecoration: 'none',
-            fontSize: '1.1rem',
-            fontWeight: '500'
-          }}>Contact</a>
+    <div>
+      {/* Navigation */}
+      <nav className="navbar">
+        <div className="nav-container">
+          <div className="logo">Humor Project Gallery</div>
+          <div className="nav-links">
+            <a href="#">Home</a>
+          </div>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <main style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: 'calc(100vh - 80px)',
-        padding: '2rem'
-      }}>
-        <h1 style={{
-          fontSize: '5rem',
-          fontWeight: '300',
-          color: '#000',
-          letterSpacing: '-0.02em',
-          margin: 0
-        }}>
-          Hello World
-        </h1>
-      </main>
+      {/* Hero */}
+      <div className="hero">
+        <h1>Explore the Gallery!</h1>
+        <p>{images?.length || 0} images</p>
+      </div>
+
+      {/* Gallery */}
+      <div className="gallery-container">
+        {images && images.length > 0 ? (
+          <div className="image-grid">
+            {images.map((image) => (
+              <div key={image.id} className="image-card">
+                {image.url ? (
+                  <div className="image-wrapper">
+                    <img
+                      src={image.url}
+                      alt={image.image_description || 'Image'}
+                    />
+                  </div>
+                ) : (
+                  <div className="image-placeholder">
+                    No image
+                  </div>
+                )}
+
+                {image.image_description && (
+                  <div className="image-content">
+                    <p className="image-description">
+                      {image.image_description}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">
+            <h3>No images found</h3>
+            <p>Check back later</p>
+          </div>
+        )}
+      </div>
     </div>
-  );
+  )
 }
