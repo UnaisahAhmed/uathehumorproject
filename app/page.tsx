@@ -1,116 +1,77 @@
 import { createClient } from '@/utils/supabase/server'
+import CaptionViewer from '@/components/caption-viewer'
 import LoginButton from '@/components/auth/login-button'
-import SignOutButton from '@/components/auth/signout-button'
-
-interface Image {
-  id: string
-  url: string | null
-  image_description: string | null
-  created_datetime_utc: string
-  is_public: boolean | null
-}
 
 export default async function Home() {
   const supabase = await createClient()
-  
-  // Check if user is authenticated
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  let images: Image[] = []
-  
-  // Only fetch images if user is logged in
-  if (user) {
-    const { data, error } = await supabase
-      .from('images')
-      .select('id, url, image_description, created_datetime_utc, is_public')
-      .eq('is_public', true)
-      .order('created_datetime_utc', { ascending: false })
-
-    if (error) {
-      console.error('Error fetching images:', error)
-    } else {
-      images = data || []
-    }
+  if (!user) {
+    return (
+      <main className="login-root">
+        <div className="login-box">
+          <div className="login-emoji">😂</div>
+          <h1 className="login-title">Humor Project</h1>
+          <p className="login-sub">
+            Help decode what makes things funny. Rate captions, one at a time.
+          </p>
+          <LoginButton />
+        </div>
+      </main>
+    )
   }
 
+  const { data: captions, error } = await supabase
+    .from('captions')
+    .select(`
+      id,
+      content,
+      profile_id,
+      created_datetime_utc,
+      caption_votes (
+        profile_id,
+        vote_value
+      )
+    `)
+    .order('created_datetime_utc', { ascending: false })
+    .order('id', { ascending: false })
+    .limit(100)
+
+  if (error) {
+    console.error('Error fetching captions', error)
+    return (
+      <div className="container text-center">
+        Error loading content. Please try again later.
+      </div>
+    )
+  }
+
+  const formatted = (captions ?? []).map((c: any) => {
+    const userVoteObj = c.caption_votes.find(
+      (v: any) => v.profile_id === user.id
+    )
+
+    const userVote = userVoteObj?.vote_value ?? 0
+
+    // ✅ Option A: include ALL votes (including current user)
+    const totalScore = c.caption_votes.reduce(
+      (acc: number, v: any) => acc + v.vote_value,
+      0
+    )
+
+    return {
+      id: c.id,
+      content: c.content,
+      profile_id: c.profile_id,
+      totalScore, // ✅ fixed
+      userVote,
+    }
+  })
+
   return (
-    <div>
-      {/* Navigation */}
-      <nav className="navbar">
-        <div className="nav-container">
-          <div className="logo">Humor Project Gallery</div>
-          <div className="nav-links">
-            <a href="#">Home</a>
-            {user ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span>{user.email}</span>
-                <SignOutButton />
-              </div>
-            ) : (
-              <LoginButton />
-            )}
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <div className="hero">
-        <h1>Explore the Gallery!</h1>
-        {user ? (
-          <p>{images?.length || 0} images</p>
-        ) : (
-          <p>Please sign in to view images</p>
-        )}
-      </div>
-
-      {/* Gallery or Login Prompt */}
-      <div className="gallery-container">
-        {user ? (
-          // Authenticated View: Show Gallery
-          images && images.length > 0 ? (
-            <div className="image-grid">
-              {images.map((image: Image) => (
-                <div key={image.id} className="image-card">
-                  {image.url ? (
-                    <div className="image-wrapper">
-                      <img
-                        src={image.url}
-                        alt={image.image_description || 'Image'}
-                      />
-                    </div>
-                  ) : (
-                    <div className="image-placeholder">
-                      No image
-                    </div>
-                  )}
-
-                  {image.image_description && (
-                    <div className="image-content">
-                      <p className="image-description">
-                        {image.image_description}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="empty-state">
-              <h3>No images found</h3>
-              <p>Check back later</p>
-            </div>
-          )
-        ) : (
-          // Unauthenticated View: Show Login Prompt
-          <div className="empty-state" style={{ padding: '40px', textAlign: 'center' }}>
-            <h2>Welcome to the Humor Project</h2>
-            <p style={{ marginBottom: '20px' }}>Sign in with Google to access the full gallery.</p>
-            <LoginButton />
-          </div>
-        )}
-      </div>
-    </div>
+    <CaptionViewer
+      captions={formatted}
+      userEmail={user.email ?? ''}
+    />
   )
 }
