@@ -28,7 +28,7 @@ export default function CaptionViewer({ captions, userEmail }: Props) {
 
   const current = captions[index]
   const progress = captions.length ? ((index + 1) / captions.length) * 100 : 0
-  const captionsLeft = Math.max(captions.length - ratedIds.size, 0)
+  const allRated = captions.length > 0 && ratedIds.size === captions.length
 
   useEffect(() => {
     document.body.setAttribute('data-theme', 'light')
@@ -144,7 +144,7 @@ export default function CaptionViewer({ captions, userEmail }: Props) {
             />
           </div>
 
-          <p className="rate-meta-focus">{captionsLeft} captions left</p>
+          {allRated ? <p className="rate-finished-inline">All captions rated</p> : null}
         </section>
       </main>
 
