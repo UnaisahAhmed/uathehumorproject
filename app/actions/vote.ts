@@ -25,7 +25,8 @@ export async function submitVote(captionId: string, voteValue: number) {
       return { error: 'Failed to remove vote' }
     }
 
-   revalidatePath('/')
+  revalidatePath('/')
+  revalidatePath('/rate')
     return { success: true }
   }
 
@@ -49,6 +50,7 @@ export async function submitVote(captionId: string, voteValue: number) {
     return { error: 'Failed to submit vote' }
   }
 
-   revalidatePath('/')
+  revalidatePath('/')
+  revalidatePath('/rate')
   return { success: true }
 }

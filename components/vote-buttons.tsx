@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { submitVote } from '@/app/actions/vote'
 
 export default function VoteButtons({
@@ -12,18 +12,13 @@ export default function VoteButtons({
   captionId: string
   initialUserVote?: number
   initialVoteCount?: number
-  onVoteSuccess?: () => void
+  onVoteSuccess?: (direction: number) => void
 }) {
   const [userVote, setUserVote] = useState(initialUserVote)
   const [voteCount, setVoteCount] = useState(initialVoteCount)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  useEffect(() => {
-    setUserVote(initialUserVote)
-    setVoteCount(initialVoteCount)
-  }, [captionId, initialUserVote, initialVoteCount])
-
-  const handleVote = async (newValue: number) => {
+  const handleVote = useCallback(async (newValue: number) => {
     if (isSubmitting) return
     setIsSubmitting(true)
 
@@ -46,21 +41,43 @@ export default function VoteButtons({
       return
     }
 
-    if (onVoteSuccess) onVoteSuccess()
+    if (onVoteSuccess) onVoteSuccess(resolvedValue)
     setIsSubmitting(false)
-  }
+  }, [captionId, isSubmitting, onVoteSuccess, userVote, voteCount])
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const activeTag = document.activeElement?.tagName?.toLowerCase()
+      if (activeTag === 'input' || activeTag === 'textarea') {
+        return
+      }
+
+      if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+        event.preventDefault()
+        void handleVote(1)
+      }
+
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+        event.preventDefault()
+        void handleVote(-1)
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [handleVote])
 
   return (
-    <div className="vote-container">
+    <div className="vote-container vote-container-wide">
       <button
-        onClick={() => handleVote(1)}
-        className={`vote-btn ${userVote === 1 ? 'active' : ''}`}
+        onClick={() => void handleVote(-1)}
+        className={`vote-btn vote-btn-wide ${userVote === -1 ? 'active' : ''}`}
         disabled={isSubmitting}
-        aria-label="Upvote"
+        aria-label="Vote down"
       >
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7"></path>
-        </svg>
+        ← Not Funny
       </button>
 
       <span className="vote-count">
@@ -68,14 +85,12 @@ export default function VoteButtons({
       </span>
 
       <button
-        onClick={() => handleVote(-1)}
-        className={`vote-btn ${userVote === -1 ? 'active' : ''}`}
+        onClick={() => void handleVote(1)}
+        className={`vote-btn vote-btn-wide ${userVote === 1 ? 'active' : ''}`}
         disabled={isSubmitting}
-        aria-label="Downvote"
+        aria-label="Vote up"
       >
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
+        Funny →
       </button>
     </div>
   )
