@@ -22,11 +22,13 @@ interface Props {
 export default function CaptionViewer({ captions, userEmail }: Props) {
   const [index, setIndex] = useState(0)
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
+  const [ratedIds, setRatedIds] = useState<Set<string>>(() => new Set(captions.filter((c) => c.userVote !== 0).map((c) => c.id)))
+  const [showAllRatedModal, setShowAllRatedModal] = useState(false)
   const swipeTimerRef = useRef<number | null>(null)
 
   const current = captions[index]
   const progress = captions.length ? ((index + 1) / captions.length) * 100 : 0
-  const captionsLeft = Math.max(captions.length - (index + 1), 0)
+  const captionsLeft = Math.max(captions.length - ratedIds.size, 0)
 
   useEffect(() => {
     document.body.setAttribute('data-theme', 'light')
@@ -52,7 +54,23 @@ export default function CaptionViewer({ captions, userEmail }: Props) {
     }
   }
 
-  const handleVoteSuccess = (direction: number) => {
+  const handleVoteSuccess = ({ direction, captionId }: { direction: number; captionId: string }) => {
+    let becameAllRated = false
+    setRatedIds((prev) => {
+      const next = new Set(prev)
+      if (direction === 0) {
+        next.delete(captionId)
+      } else {
+        next.add(captionId)
+      }
+      becameAllRated = captions.length > 0 && next.size === captions.length
+      return next
+    })
+
+    if (becameAllRated) {
+      setShowAllRatedModal(true)
+    }
+
     if (direction === 0) {
       return
     }
@@ -127,9 +145,20 @@ export default function CaptionViewer({ captions, userEmail }: Props) {
           </div>
 
           <p className="rate-meta-focus">{captionsLeft} captions left</p>
-          {captionsLeft === 0 ? <p className="rate-finished">All captions rated</p> : null}
         </section>
       </main>
+
+      {showAllRatedModal ? (
+        <div className="all-rated-overlay" role="dialog" aria-modal="true" aria-label="All captions rated">
+          <div className="all-rated-modal">
+            <h2>All captions rated!</h2>
+            <p>Nice work. You&apos;ve rated every caption in this set.</p>
+            <button className="nav-btn nav-next" onClick={() => setShowAllRatedModal(false)}>
+              Continue browsing
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

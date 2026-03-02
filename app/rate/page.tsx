@@ -12,9 +12,24 @@ interface CaptionRow {
   id: string
   content: string | null
   profile_id: string
-  image: {
-    url: string | null
-  } | null
+  image:
+    | {
+        url: string | null
+      }
+    | Array<{
+        url: string | null
+      }>
+    | null
+}
+
+function getImageUrl(image: CaptionRow['image']): string {
+  if (Array.isArray(image)) {
+    const url = image[0]?.url
+    return typeof url === 'string' ? url : ''
+  }
+
+  const url = image?.url
+  return typeof url === 'string' ? url : ''
 }
 
 export default async function RatePage() {
@@ -54,11 +69,7 @@ export default async function RatePage() {
   }
 
   const captionsWithImage = ((captions ?? []) as CaptionRow[]).filter(
-    (c) =>
-      typeof c.image?.url === 'string' &&
-      c.image.url.trim().length > 0 &&
-      typeof c.content === 'string' &&
-      c.content.trim().length > 0
+    (c) => getImageUrl(c.image).trim().length > 0 && typeof c.content === 'string' && c.content.trim().length > 0
   )
 
   if (captionsWithImage.length === 0) {
@@ -104,7 +115,7 @@ export default async function RatePage() {
       id: c.id,
       content: c.content ?? '',
       profile_id: c.profile_id,
-      imageUrl: c.image?.url ?? '',
+      imageUrl: getImageUrl(c.image),
       totalScore: score.totalScore,
       userVote: score.userVote,
     }

@@ -10,7 +10,7 @@ export default function VoteButtons({
 }: {
   captionId: string
   initialUserVote?: number
-  onVoteSuccess?: (direction: number) => void
+  onVoteSuccess?: (result: { direction: number; captionId: string }) => void
 }) {
   const [userVote, setUserVote] = useState(initialUserVote)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -33,7 +33,7 @@ export default function VoteButtons({
       return
     }
 
-    if (onVoteSuccess) onVoteSuccess(resolvedValue)
+    if (onVoteSuccess) onVoteSuccess({ direction: resolvedValue, captionId })
     setIsSubmitting(false)
   }, [captionId, isSubmitting, onVoteSuccess, userVote])
 

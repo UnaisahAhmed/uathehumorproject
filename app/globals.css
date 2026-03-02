@@ -1208,6 +1208,36 @@ a { color: inherit; text-decoration: none; }
   font-weight: 700;
 }
 
+.all-rated-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 16, 16, 0.4);
+  display: grid;
+  place-items: center;
+  z-index: 220;
+  padding: 1rem;
+}
+
+.all-rated-modal {
+  width: min(92vw, 460px);
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(16, 16, 16, 0.16);
+  padding: 1rem 1.1rem;
+  display: grid;
+  gap: 0.55rem;
+  text-align: center;
+}
+
+.all-rated-modal h2 {
+  font-size: 1.7rem;
+}
+
+.all-rated-modal p {
+  color: var(--ink-muted);
+  font-size: 1.05rem;
+}
+
 .nav-buttons {
   display: none;
 }
