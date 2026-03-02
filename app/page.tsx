@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import LoginButton from '@/components/auth/login-button'
@@ -15,11 +16,11 @@ export default async function Home() {
   return (
     <main className="landing-mock-root">
       <header className="mock-topbar">
-        <p className="mock-brand">
+        <Link href="/" className="mock-brand" aria-label="Go to home">
           <span>THE </span>
           <span className="brand-accent">HUMOR</span>
           <span> PROJECT</span>
-        </p>
+        </Link>
       </header>
 
       <section className="landing-stage">
@@ -34,10 +35,10 @@ export default async function Home() {
         <div className="reaction-area" aria-hidden="true">
           <p className="reaction-bubble b1">👩🏽 &ldquo;Um... what?&rdquo; 🤨</p>
           <p className="reaction-bubble b2">🧑🏾 &ldquo;Bruh. That&apos;s not funny.&rdquo; 👎</p>
-          <p className="reaction-bubble b3">👱🏻‍♀️ NO WAY LOLL</p>
-          <p className="reaction-bubble b4">👩🏿 &ldquo;I&apos;M DED.&rdquo; 💀💀</p>
+          <p className="reaction-bubble b3">👱🏻‍♀️ No way lol</p>
+          <p className="reaction-bubble b4">👩🏿 &ldquo;I&apos;m dead.&rdquo; 💀💀</p>
           <p className="reaction-bubble b5">🧑🏻 &ldquo;You thought you ate.&rdquo; 🙄</p>
-          <p className="reaction-bubble b6">👨🏿 &ldquo;LOL STOP!&rdquo; 😭</p>
+          <p className="reaction-bubble b6">👨🏿 &ldquo;LOL stop!&rdquo; 😭</p>
 
           <div className="landing-login-btn">
             <LoginButton />

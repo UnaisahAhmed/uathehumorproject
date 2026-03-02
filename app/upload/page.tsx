@@ -17,37 +17,35 @@ export default async function UploadPage() {
   return (
     <div className="create-root">
       <header className="mock-topbar">
-        <p className="mock-brand"><span>THE </span><span className="brand-accent">HUMOR</span><span> PROJECT</span></p>
+        <Link href="/choose" className="mock-brand" aria-label="Go to home">
+          <span>THE </span>
+          <span className="brand-accent">HUMOR</span>
+          <span> PROJECT</span>
+        </Link>
+
         <nav className="mock-nav" aria-label="App sections">
-          <Link href="/rate">RATE</Link>
-          <Link href="/upload" aria-current="page">CREATE</Link>
-          <Link href="/choose">HOME</Link>
+          <Link href="/rate">Rate</Link>
+          <Link href="/upload" aria-current="page">Create</Link>
+          <span className="user-chip">{user.email?.split('@')[0]}</span>
           <SignOutButton />
         </nav>
       </header>
 
-      <main className="create-main">
-        <h1 className="page-label">create page</h1>
-
-        <section className="create-layout-mock">
-          <div className="create-title-block">CREATE</div>
+      <main className="create-main compact-main">
+        <section className="create-layout-mock compact-layout">
+          <div className="create-title-block">Create</div>
 
           <ol className="create-steps-mock">
-            <li><span>1</span> STEP 1 upload</li>
-            <li><span>2</span> STEP 2</li>
-            <li><span>3</span> STEP 3</li>
-            <li><span>4</span> STEP 4</li>
+            <li><span>1</span>Pick an image file (JPG, PNG, WEBP, GIF, or HEIC).</li>
+            <li><span>2</span>We upload it securely to cloud storage.</li>
+            <li><span>3</span>We register the image in the caption pipeline.</li>
+            <li><span>4</span>You get generated captions instantly below.</li>
           </ol>
         </section>
 
-        <section className="upload-form-panel">
+        <section className="upload-form-panel compact-panel">
           <UploadCaptionForm />
         </section>
-
-        <div className="create-footer-meta">
-          <span>Confidential</span>
-          <span>{user.email?.split('@')[0]}</span>
-        </div>
       </main>
     </div>
   )

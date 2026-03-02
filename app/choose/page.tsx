@@ -16,35 +16,30 @@ export default async function ChoosePage() {
   return (
     <main className="choose-mock-root">
       <header className="mock-topbar">
-        <p className="mock-brand"><span>THE </span><span className="brand-accent">HUMOR</span><span> PROJECT after log in page</span></p>
-      </header>
+        <Link href="/choose" className="mock-brand" aria-label="Go to home">
+          <span>THE </span>
+          <span className="brand-accent">HUMOR</span>
+          <span> PROJECT</span>
+        </Link>
 
-      <section className="choose-stage">
-        <h1>DO YOU WANT TO:</h1>
-
-        <div className="choose-cards">
-          <Link href="/rate" className="choose-card-item">
-            <h2>LAUGH <span>(RATE CAPTIONS)</span></h2>
-          </Link>
-
-          <Link href="/upload" className="choose-card-item">
-            <h2>MAKE OTHERS LAUGH <span>(CREATE YOUR OWN MEME)</span></h2>
-          </Link>
-        </div>
-
-        <div className="choose-copy-row">
-          <p>
-            Help us rate captions and improve our understanding of what truly is LOL 💀💀 and what is 🙄
-          </p>
-          <p>
-            Upload your own photos and we’ll create a couple of captions!
-          </p>
-        </div>
-
-        <div className="choose-actions">
+        <nav className="mock-nav" aria-label="App sections">
+          <Link href="/rate">Rate</Link>
+          <Link href="/upload">Create</Link>
           <span className="user-chip">{user.email?.split('@')[0]}</span>
           <SignOutButton />
-        </div>
+        </nav>
+      </header>
+
+      <section className="choose-split-wrap">
+        <Link href="/rate" className="split-choice split-choice-rate">
+          <h2>Rate Captions</h2>
+          <p>See a meme, react fast, teach the model what lands.</p>
+        </Link>
+
+        <Link href="/upload" className="split-choice split-choice-create">
+          <h2>Create Captions</h2>
+          <p>Upload an image and generate caption options in seconds.</p>
+        </Link>
       </section>
     </main>
   )

@@ -26,6 +26,7 @@ export default function CaptionViewer({ captions, userEmail }: Props) {
 
   const current = captions[index]
   const progress = captions.length ? ((index + 1) / captions.length) * 100 : 0
+  const captionsLeft = Math.max(captions.length - (index + 1), 0)
 
   useEffect(() => {
     document.body.setAttribute('data-theme', 'light')
@@ -72,15 +73,15 @@ export default function CaptionViewer({ captions, userEmail }: Props) {
     return (
       <div className="rate-root">
         <header className="mock-topbar">
-          <p className="mock-brand"><span>THE </span><span className="brand-accent">HUMOR</span><span> PROJECT</span></p>
+          <Link href="/choose" className="mock-brand" aria-label="Go to home"><span>THE </span><span className="brand-accent">HUMOR</span><span> PROJECT</span></Link>
           <nav className="mock-nav">
-            <Link href="/rate">RATE</Link>
-            <Link href="/upload">CREATE</Link>
+            <Link href="/rate">Rate</Link>
+            <Link href="/upload">Create</Link>
+            <span className="user-chip">{userEmail?.split('@')[0]}</span>
             <SignOutButton />
           </nav>
         </header>
         <main className="rate-main">
-          <h1 className="page-label">rate page</h1>
           <p>No public captions with images are available yet.</p>
         </main>
       </div>
@@ -90,48 +91,44 @@ export default function CaptionViewer({ captions, userEmail }: Props) {
   return (
     <div className="rate-root">
       <header className="mock-topbar">
-        <p className="mock-brand"><span>THE </span><span className="brand-accent">HUMOR</span><span> PROJECT</span></p>
+        <Link href="/choose" className="mock-brand" aria-label="Go to home"><span>THE </span><span className="brand-accent">HUMOR</span><span> PROJECT</span></Link>
         <nav className="mock-nav" aria-label="App sections">
-          <Link href="/rate" aria-current="page">RATE</Link>
-          <Link href="/upload">CREATE</Link>
-          <Link href="/choose">HOME</Link>
+          <Link href="/rate" aria-current="page">Rate</Link>
+          <Link href="/upload">Create</Link>
+          <span className="user-chip">{userEmail?.split('@')[0]}</span>
           <SignOutButton />
         </nav>
       </header>
 
-      <main className="rate-main">
-        <h1 className="page-label">rate page</h1>
+      <main className="rate-main compact-main">
+        <div className="progress-track"><div className="progress-fill" style={{ width: `${progress}%` }} /></div>
+        <section className={`rate-focus-stack ${swipeDirection === 'left' ? 'card-swipe-left' : ''} ${swipeDirection === 'right' ? 'card-swipe-right' : ''}`}>
+          <div className="rate-image-stage">
+            <button className="image-nav-btn image-nav-left" onClick={goPrev} disabled={index === 0} aria-label="Previous caption">
+              ←
+            </button>
+            {current.imageUrl ? (
+              <img src={current.imageUrl} alt="Caption image" className="rate-image-focus" />
+            ) : null}
+            <button className="image-nav-btn image-nav-right" onClick={goNext} disabled={index === captions.length - 1} aria-label="Next caption">
+              →
+            </button>
+          </div>
 
-        <section className={`rate-center-single ${swipeDirection === 'left' ? 'card-swipe-left' : ''} ${swipeDirection === 'right' ? 'card-swipe-right' : ''}`}>
-          <div className="rate-index">#{index + 1}</div>
-          {current.imageUrl ? (
-            <img src={current.imageUrl} alt="Caption image" className="center-image" />
-          ) : null}
+          <p className="rate-caption-focus">{current.content}</p>
 
-          <p className="center-caption">{current.content}</p>
-
-          <div className="center-vote-row">
-            <span>NOT FUNNY</span>
+          <div className="rate-actions-focus">
             <VoteButtons
               key={current.id}
               captionId={current.id}
               initialUserVote={current.userVote}
-              initialVoteCount={current.totalScore}
               onVoteSuccess={handleVoteSuccess}
             />
-            <span>FUNNY</span>
           </div>
 
-          <p className="vote-hint">{userEmail?.split('@')[0]} | Use arrow keys too.</p>
+          <p className="rate-meta-focus">{captionsLeft} captions left</p>
+          {captionsLeft === 0 ? <p className="rate-finished">All captions rated</p> : null}
         </section>
-
-        <div className="progress-track"><div className="progress-fill" style={{ width: `${progress}%` }} /></div>
-        <div className="progress-label">{index + 1} / {captions.length}</div>
-
-        <div className="nav-buttons">
-          <button className="nav-btn" onClick={goPrev} disabled={index === 0}>← Previous</button>
-          <button className="nav-btn nav-next" onClick={goNext} disabled={index === captions.length - 1}>Next →</button>
-        </div>
       </main>
     </div>
   )

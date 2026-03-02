@@ -6,16 +6,13 @@ import { submitVote } from '@/app/actions/vote'
 export default function VoteButtons({
   captionId,
   initialUserVote = 0,
-  initialVoteCount = 0,
   onVoteSuccess
 }: {
   captionId: string
   initialUserVote?: number
-  initialVoteCount?: number
   onVoteSuccess?: (direction: number) => void
 }) {
   const [userVote, setUserVote] = useState(initialUserVote)
-  const [voteCount, setVoteCount] = useState(initialVoteCount)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleVote = useCallback(async (newValue: number) => {
@@ -23,27 +20,22 @@ export default function VoteButtons({
     setIsSubmitting(true)
 
     const previousUserVote = userVote
-    const previousVoteCount = voteCount
-
     const resolvedValue = userVote === newValue ? 0 : newValue
-    const diff = resolvedValue - userVote
 
     setUserVote(resolvedValue)
-    setVoteCount(prev => prev + diff)
 
     const result = await submitVote(captionId, resolvedValue)
 
     if (result?.error) {
       alert(result.error)
       setUserVote(previousUserVote)
-      setVoteCount(previousVoteCount)
       setIsSubmitting(false)
       return
     }
 
     if (onVoteSuccess) onVoteSuccess(resolvedValue)
     setIsSubmitting(false)
-  }, [captionId, isSubmitting, onVoteSuccess, userVote, voteCount])
+  }, [captionId, isSubmitting, onVoteSuccess, userVote])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -70,27 +62,23 @@ export default function VoteButtons({
   }, [handleVote])
 
   return (
-    <div className="vote-container vote-container-wide">
+    <div className="vote-container vote-container-simple">
       <button
         onClick={() => void handleVote(-1)}
-        className={`vote-btn vote-btn-wide ${userVote === -1 ? 'active' : ''}`}
+        className={`vote-btn vote-btn-simple ${userVote === -1 ? 'active' : ''}`}
         disabled={isSubmitting}
         aria-label="Vote down"
       >
-        ← Not Funny
+        Downvote
       </button>
-
-      <span className="vote-count">
-        {voteCount > 0 ? `+${voteCount}` : voteCount}
-      </span>
 
       <button
         onClick={() => void handleVote(1)}
-        className={`vote-btn vote-btn-wide ${userVote === 1 ? 'active' : ''}`}
+        className={`vote-btn vote-btn-simple ${userVote === 1 ? 'active' : ''}`}
         disabled={isSubmitting}
         aria-label="Vote up"
       >
-        Funny →
+        Upvote
       </button>
     </div>
   )

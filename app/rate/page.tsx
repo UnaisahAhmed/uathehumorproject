@@ -10,7 +10,7 @@ interface CaptionVoteRow {
 
 interface CaptionRow {
   id: string
-  content: string
+  content: string | null
   profile_id: string
   image: {
     url: string | null
@@ -54,7 +54,11 @@ export default async function RatePage() {
   }
 
   const captionsWithImage = ((captions ?? []) as CaptionRow[]).filter(
-    (c) => typeof c.image?.url === 'string' && c.image.url.trim().length > 0
+    (c) =>
+      typeof c.image?.url === 'string' &&
+      c.image.url.trim().length > 0 &&
+      typeof c.content === 'string' &&
+      c.content.trim().length > 0
   )
 
   if (captionsWithImage.length === 0) {
@@ -98,7 +102,7 @@ export default async function RatePage() {
 
     return {
       id: c.id,
-      content: c.content,
+      content: c.content ?? '',
       profile_id: c.profile_id,
       imageUrl: c.image?.url ?? '',
       totalScore: score.totalScore,
