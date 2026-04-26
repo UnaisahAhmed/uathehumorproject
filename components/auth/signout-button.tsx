@@ -7,9 +7,19 @@ export default function SignOutButton() {
   const router = useRouter()
 
   const handleSignOut = async () => {
+    try {
+      for (const key of Object.keys(localStorage)) {
+        if (key.startsWith('rating_session_')) {
+          localStorage.removeItem(key)
+        }
+      }
+    } catch {
+      // Ignore storage errors during sign out.
+    }
+
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.refresh()
+    router.push('/')
   }
 
   return (
