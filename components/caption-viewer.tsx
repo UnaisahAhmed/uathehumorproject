@@ -62,16 +62,12 @@ export default function CaptionViewer({ captions, userEmail, userId }: Props) {
   const [votesByCaption, setVotesByCaption] = useState<Map<string, number>>(new Map())
   const [index, setIndex] = useState(0)
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
-  const [imgError, setImgError] = useState(false)
+  const [erroredImageId, setErroredImageId] = useState<string | null>(null)
   const swipeTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     document.body.setAttribute('data-theme', 'light')
   }, [])
-
-  useEffect(() => {
-    setImgError(false)
-  }, [index])
 
   useEffect(() => {
     return () => {
@@ -177,7 +173,7 @@ export default function CaptionViewer({ captions, userEmail, userId }: Props) {
   }
 
   // Server has confirmed — nothing left to do for UX (advance already in progress).
-  const handleVoteSuccess = (_result: { direction: number; captionId: string }) => {}
+  const handleVoteSuccess = () => {}
 
   const topbar = (
     <header className="mock-topbar">
@@ -228,6 +224,7 @@ export default function CaptionViewer({ captions, userEmail, userId }: Props) {
 
   const current = sessionCaptions[index]
   const currentVote = votesByCaption.get(current?.id) ?? 0
+  const hasImageError = erroredImageId === current?.id
   const ratedCount = [...votesByCaption.values()].filter((v) => v !== 0).length
   const isSessionComplete = sessionCaptions.length > 0 && ratedCount === sessionCaptions.length
   const progress = sessionCaptions.length > 0 ? (ratedCount / sessionCaptions.length) * 100 : 0
@@ -276,13 +273,13 @@ export default function CaptionViewer({ captions, userEmail, userId }: Props) {
             >
               ←
             </button>
-            {current.imageUrl && !imgError ? (
+            {current.imageUrl && !hasImageError ? (
               <img
                 key={current.id}
                 src={current.imageUrl}
                 alt="Caption image"
                 className="rate-image-focus"
-                onError={() => setImgError(true)}
+                onError={() => setErroredImageId(current.id)}
               />
             ) : (
               <div key={current.id} className="rate-image-missing">Image unavailable</div>
