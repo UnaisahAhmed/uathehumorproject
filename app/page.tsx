@@ -1,13 +1,17 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+import { isSupabaseConfigured } from '@/utils/supabase/config'
 import LoginButton from '@/components/auth/login-button'
 
 export default async function Home() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user = null
+
+  if (isSupabaseConfigured()) {
+    const supabase = await createClient()
+    const response = await supabase.auth.getUser()
+    user = response.data.user
+  }
 
   if (user) {
     redirect('/choose')

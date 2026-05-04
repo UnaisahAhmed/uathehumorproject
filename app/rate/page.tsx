@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
+import { isSupabaseConfigured } from '@/utils/supabase/config'
 import { redirect } from 'next/navigation'
 import CaptionViewer from '@/components/caption-viewer'
 
@@ -26,6 +27,10 @@ function getImageUrl(image: CaptionRow['image']): string {
 }
 
 export default async function RatePage() {
+  if (!isSupabaseConfigured()) {
+    return redirect('/')
+  }
+
   const supabase = await createClient()
   const {
     data: { user },

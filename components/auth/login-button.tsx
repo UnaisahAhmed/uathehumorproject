@@ -1,6 +1,7 @@
 'use client'
 
 import { createClient } from '@/utils/supabase/client'
+import { isSupabaseConfigured } from '@/utils/supabase/config'
 
 export default function LoginButton() {
   const handleLogin = async () => {
@@ -14,6 +15,18 @@ export default function LoginButton() {
         redirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(redirectPath)}`,
       },
     })
+  }
+
+  if (!isSupabaseConfigured()) {
+    return (
+      <button
+        className="btn btn-primary"
+        disabled
+        type="button"
+      >
+        Sign in unavailable
+      </button>
+    )
   }
 
   return (

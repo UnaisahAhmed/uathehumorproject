@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getSupabaseConfig } from '@/utils/supabase/config'
 
 const protectedRoutes = ['/choose', '/rate', '/upload', '/protected']
 
@@ -20,11 +21,10 @@ function redirectWithSessionCookies(url: URL, sessionResponse: NextResponse) {
 }
 
 export async function updateSession(request: NextRequest) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const config = getSupabaseConfig()
 
   // If env vars are not configured, pass the request through without crashing
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!config) {
     return NextResponse.next({ request })
   }
 
@@ -33,8 +33,8 @@ export async function updateSession(request: NextRequest) {
   })
 
   const supabase = createServerClient(
-    supabaseUrl,
-    supabaseAnonKey,
+    config.url,
+    config.anonKey,
     {
       cookies: {
         getAll() {

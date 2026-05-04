@@ -1,7 +1,12 @@
 import { createClient } from '@/utils/supabase/server'
+import { isSupabaseConfigured } from '@/utils/supabase/config'
 import { redirect } from 'next/navigation'
 
 export default async function ProtectedPage() {
+  if (!isSupabaseConfigured()) {
+    return redirect('/')
+  }
+
   const supabase = await createClient()
 
   const {

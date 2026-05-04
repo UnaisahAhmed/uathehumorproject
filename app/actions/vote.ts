@@ -1,9 +1,14 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { isSupabaseConfigured } from '@/utils/supabase/config'
 import { revalidatePath } from 'next/cache'
 
 export async function submitVote(captionId: string, voteValue: number) {
+  if (!isSupabaseConfigured()) {
+    return { error: 'Authentication is not configured.' }
+  }
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()

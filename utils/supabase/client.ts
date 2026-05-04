@@ -1,8 +1,15 @@
 import { createBrowserClient } from '@supabase/ssr'
+import { getSupabaseConfig } from '@/utils/supabase/config'
 
 export function createClient() {
+  const config = getSupabaseConfig()
+
+  if (!config) {
+    throw new Error('Supabase environment variables are not configured.')
+  }
+
   return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    config.url,
+    config.anonKey
   )
 }

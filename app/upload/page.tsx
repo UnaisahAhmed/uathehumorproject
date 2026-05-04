@@ -2,9 +2,14 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import SignOutButton from '@/components/auth/signout-button'
 import { createClient } from '@/utils/supabase/server'
+import { isSupabaseConfigured } from '@/utils/supabase/config'
 import UploadCaptionForm from '@/components/upload-caption-form'
 
 export default async function UploadPage() {
+  if (!isSupabaseConfigured()) {
+    return redirect('/')
+  }
+
   const supabase = await createClient()
   const {
     data: { user },

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
+import { isSupabaseConfigured } from '@/utils/supabase/config'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -7,6 +8,10 @@ export async function GET(request: Request) {
   // if "next" is in param, use it as the redirect URL
   const next = searchParams.get('next')
   const redirectPath = next?.startsWith('/') ? next : '/choose'
+
+  if (!isSupabaseConfigured()) {
+    return NextResponse.redirect(`${origin}/auth/auth-code-error`)
+  }
 
   if (code) {
     const supabase = await createClient()
