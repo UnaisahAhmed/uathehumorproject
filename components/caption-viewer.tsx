@@ -5,7 +5,7 @@ import Link from 'next/link'
 import VoteButtons from '@/components/vote-buttons'
 import SignOutButton from '@/components/auth/signout-button'
 
-const SESSION_SIZE = 25
+const SESSION_SIZE = 14
 
 interface Caption {
   id: string
@@ -62,11 +62,16 @@ export default function CaptionViewer({ captions, userEmail, userId }: Props) {
   const [votesByCaption, setVotesByCaption] = useState<Map<string, number>>(new Map())
   const [index, setIndex] = useState(0)
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
+  const [imgError, setImgError] = useState(false)
   const swipeTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     document.body.setAttribute('data-theme', 'light')
   }, [])
+
+  useEffect(() => {
+    setImgError(false)
+  }, [index])
 
   useEffect(() => {
     return () => {
@@ -142,7 +147,10 @@ export default function CaptionViewer({ captions, userEmail, userId }: Props) {
     setIndex((i) => (i > 0 ? i - 1 : 0))
   }
 
-  const handleVoteSuccess = ({ direction, captionId }: { direction: number; captionId: string }) => {
+  // Fires immediately on click — updates counter, progress bar, and starts the advance animation.
+  // Starting the advance here (not after the server responds) keeps isSubmitting=true in VoteButtons
+  // for the full 180 ms animation window, preventing key-repeat from toggling the same caption.
+  const handleVoteOptimistic = ({ direction, captionId }: { direction: number; captionId: string }) => {
     let nextRatedCount = 0
     setVotesByCaption((prev) => {
       const next = new Map(prev)
@@ -157,19 +165,19 @@ export default function CaptionViewer({ captions, userEmail, userId }: Props) {
 
     if (direction === 0) return
 
-    // Capture length now — sessionCaptions is stable but this makes the closure explicit
     const len = sessionCaptions.length
-
     setSwipeDirection(direction > 0 ? 'right' : 'left')
     if (swipeTimerRef.current !== null) window.clearTimeout(swipeTimerRef.current)
 
     swipeTimerRef.current = window.setTimeout(() => {
-      // Functional update avoids any stale-closure issue with index
       setIndex((i) => (i < len - 1 ? i + 1 : i))
       setSwipeDirection(null)
       swipeTimerRef.current = null
     }, 180)
   }
+
+  // Server has confirmed — nothing left to do for UX (advance already in progress).
+  const handleVoteSuccess = (_result: { direction: number; captionId: string }) => {}
 
   const topbar = (
     <header className="mock-topbar">
@@ -268,9 +276,17 @@ export default function CaptionViewer({ captions, userEmail, userId }: Props) {
             >
               ←
             </button>
-            {current.imageUrl ? (
-              <img src={current.imageUrl} alt="Caption image" className="rate-image-focus" />
-            ) : null}
+            {current.imageUrl && !imgError ? (
+              <img
+                key={current.id}
+                src={current.imageUrl}
+                alt="Caption image"
+                className="rate-image-focus"
+                onError={() => setImgError(true)}
+              />
+            ) : (
+              <div key={current.id} className="rate-image-missing">Image unavailable</div>
+            )}
             <button
               className="image-nav-btn image-nav-right"
               onClick={goNext}
@@ -288,6 +304,7 @@ export default function CaptionViewer({ captions, userEmail, userId }: Props) {
               key={current.id}
               captionId={current.id}
               initialUserVote={currentVote}
+              onVoteOptimistic={handleVoteOptimistic}
               onVoteSuccess={handleVoteSuccess}
             />
           </div>

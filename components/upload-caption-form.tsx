@@ -1,6 +1,6 @@
 'use client'
 
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react'
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 
 const API_BASE_URL = 'https://api.almostcrackd.ai'
@@ -63,11 +63,13 @@ async function parseErrorMessage(response: Response): Promise<string> {
 export default function UploadCaptionForm() {
   const [file, setFile] = useState<File | null>(null)
   const [isRunning, setIsRunning] = useState(false)
+  const [hasSucceeded, setHasSucceeded] = useState(false)
   const [statusText, setStatusText] = useState('Select an image to begin.')
   const [errorText, setErrorText] = useState('')
   const [uploadedCdnUrl, setUploadedCdnUrl] = useState('')
   const [imageId, setImageId] = useState('')
   const [captions, setCaptions] = useState<CaptionRecord[]>([])
+  const captionsRef = useRef<HTMLDivElement>(null)
 
   const previewUrl = useMemo(() => {
     if (!file) {
@@ -92,6 +94,7 @@ export default function UploadCaptionForm() {
     setCaptions([])
     setUploadedCdnUrl('')
     setImageId('')
+    setHasSucceeded(false)
 
     if (!nextFile) {
       setFile(null)
@@ -119,6 +122,7 @@ export default function UploadCaptionForm() {
     }
 
     setIsRunning(true)
+    setHasSucceeded(false)
     setErrorText('')
     setCaptions([])
     setUploadedCdnUrl('')
@@ -212,7 +216,9 @@ export default function UploadCaptionForm() {
         : []
 
       setCaptions(records)
+      setHasSucceeded(true)
       setStatusText(`Done: generated ${records.length} caption${records.length === 1 ? '' : 's'}.`)
+      setTimeout(() => captionsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unexpected error during upload pipeline.'
       setErrorText(message)
@@ -242,7 +248,7 @@ export default function UploadCaptionForm() {
         {file ? <p className="upload-file-meta">Selected: {file.name}</p> : null}
 
         <button className="upload-submit" type="submit" disabled={!file || isRunning}>
-          {isRunning ? 'Working...' : 'Upload & Generate Captions'}
+          {isRunning ? 'Working…' : hasSucceeded && captions.length > 0 ? 'Generate Again' : 'Upload & Generate Captions'}
         </button>
       </form>
 
@@ -264,7 +270,7 @@ export default function UploadCaptionForm() {
       ) : null}
 
       {captions.length > 0 ? (
-        <div className="generated-captions">
+        <div className="generated-captions" ref={captionsRef}>
           <h2 className="generated-title">Generated Captions</h2>
           <ol className="generated-list">
             {captions.map((record, index) => (
